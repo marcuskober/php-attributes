@@ -3,7 +3,7 @@
     "type": "wordpress-plugin",
     "autoload": {
         "psr-4": {
-            "PhpAnnotations\\": "src/"
+            "PhpAttributes\\": "src/"
         }
     },
     "authors": [

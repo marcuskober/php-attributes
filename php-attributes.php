@@ -1,17 +1,17 @@
 <?php
 /*
-Plugin Name: PHP Annotations
+Plugin Name: PHP Atributes
 Plugin URI: https://marcuskober.de
-Description: Example plugin that uses php annotation for registering hooks
+Description: Example plugin that uses php attributes for registering hooks
 Version: 1.0.0
 Requires at least: 6.0
 Requires PHP: 8.1
 Author: Marcus Kober
 Author URI: https://marcuskober.de
-Text Domain: phpannotations
+Text Domain: phpattributes
 */
 
-use PhpAnnotations\Main\App;
+use PhpAttributes\Main\App;
 
 if (! defined('ABSPATH')) {
     die('Go away');

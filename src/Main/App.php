@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace PhpAnnotations\Main;
+namespace PhpAttributes\Main;
 
 class App
 {
