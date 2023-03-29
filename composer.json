@@ -1,0 +1,16 @@
+{
+    "name": "marcuskober/php-annotations",
+    "type": "wordpress-plugin",
+    "autoload": {
+        "psr-4": {
+            "PhpAnnotations\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Marcus Kober",
+            "email": "marcus.kober@gmail.com"
+        }
+    ],
+    "require": {}
+}
