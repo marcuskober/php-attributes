@@ -11,6 +11,8 @@ Author URI: https://marcuskober.de
 Text Domain: phpannotations
 */
 
+use PhpAnnotations\Main\App;
+
 if (! defined('ABSPATH')) {
     die('Go away');
 }
@@ -21,3 +23,5 @@ define('PHPAN_BASENAME', plugin_basename( __FILE__ ));
 define('PHPAN_VERSION', '1.0.0');
 
 require PHPAN_DIR . 'vendor/autoload.php';
+
+App::init();
