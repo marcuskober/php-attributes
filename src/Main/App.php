@@ -9,7 +9,7 @@ use ReflectionClass;
 
 class App
 {
-    private array $hooks = [];
+    private array $hookedClasses = [];
     private array $instances = [];
 
     public static function init(): void
@@ -20,21 +20,21 @@ class App
 
     private function registerHooks(): void
     {
-        $this->hooks = require PHPAN_DIR . 'src/config/hooks.php';
+        $this->hookedClasses = require PHPAN_DIR . 'src/config/hookedClasses.php';
 
-        foreach ($this->hooks as $hookClass) {
-            $reflectionHook = new ReflectionClass($hookClass);
+        foreach ($this->hookedClasses as $hookedClass) {
+            $reflectionHook = new ReflectionClass($hookedClass);
 
             foreach ($reflectionHook->getMethods() as $method) {
                 $actionAttributes = $method->getAttributes(Action::class);
 
                 foreach ($actionAttributes as $actionAttribute) {
-                    if (! isset($this->instances[$hookClass])) {
-                        $this->instances[$hookClass] = new $hookClass();
+                    if (! isset($this->instances[$hookedClass])) {
+                        $this->instances[$hookedClass] = new $hookedClass();
                     }
 
                     $action = $actionAttribute->newInstance();
-                    $action->register([$this->instances[$hookClass], $method->getName()]);
+                    $action->register([$this->instances[$hookedClass], $method->getName()]);
                 }
             }
         }
