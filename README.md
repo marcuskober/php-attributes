@@ -90,6 +90,7 @@ To utilize PHP attributes for hook registration, we need to complete three tasks
 
 In practice, we follow this sequence to achieve our goal. To gain a better understanding of the concept, we will begin with step 2, move on to step 1, and then complete step 3.
 
+---
 ### 1️⃣ The class with the hook
 
 Let's say we want to add a classname to the body tag, as seen in the examples above. We take the pure class without any hook registration:
@@ -140,6 +141,8 @@ class MyClass
 
 We'll cover that in more detail later on.
 
+---
+
 ### 2️⃣ The attribute class
 
 In order for the code above to work, we need to define the corresponding attribute class.
@@ -179,7 +182,7 @@ Now, we want to incorporate the call to `add_filter()` within our class:
 
 ```php
 #[Attribute]
-class Filter implements HookInterface
+class Filter
 {
     public function __construct(
         public string $hook,
@@ -197,6 +200,8 @@ class Filter implements HookInterface
 ```
 
 That's our attribute class. The next step is to make it functional.
+
+---
 
 ### 3️⃣ Scanning our hooked classes
 
@@ -352,8 +357,106 @@ class App
 }
 ```
 
+### 4️⃣ Extending our code to register actions too
 
+The `Action` attribute class looks very similar to the `Filter` class:
 
+```php
+#[Attribute]
+class Action
+{
+    public function __construct(
+        public string $hook,
+        public int $priority = 10,
+        public int $acceptedArgs = 1
+    )
+    {
+    }
 
+    public function register(callable|array $method): void
+    {
+        add_action($this->hook, $method, $this->priority, $this->acceptedArgs);
+    }
+}
+```
 
+To be able to search for `Filter` and `Action` attributes using the `getAttributes()` method, we create a simple interface for our hook classes:
 
+```php
+interface HookInterface
+{
+    public function register(callable|array $method): void;
+}
+```
+
+Our `Filter` and `Action` attribute classes must implement this interface:
+
+```php
+#[Attribute]
+class Filter implements HookInterface
+{
+  // Class code
+}
+
+#[Attribute]
+class Action implements HookInterface
+{
+  // Class code
+}
+```
+
+Now we can easily use our exiting code of the `registerHooks()` method to support filters and actions:
+
+```php
+private function registerHooks(): void
+{
+  $hookedClasses = [
+    'MyClass',
+  ];
+
+  foreach ($hookedClasses as $hookedClass) {
+    $reflectionClass = new ReflectionClass($hookedClass);
+
+    foreach ($reflectionClass->getMethods() as $method) {
+      $hookAttributes = $method->getAttributes(HookInterface::class, ReflectionAttribute::IS_INSTANCEOF);
+
+        foreach ($hookAttributes as $hookAttribute) {
+          if (! isset($this->instances[$hookedClass])) {
+            $this->instances[$hookedClass] = new $hookedClass();
+          }
+
+          $hook = $hookAttribute->newInstance();
+          $hook->register([$this->instances[$hookedClass], $method->getName()]);
+        }
+    }
+  }
+}
+```
+
+For `getAttributes()` to accept the interface as a class name, we need to set the flag `ReflectionAttribute::IS_INSTANCEOF` (see [documentation](https://www.php.net/manual/en/reflectionfunctionabstract.getattributes.php)).
+
+---
+
+## End of tutorial
+
+I hope you found this tutorial helpful. If you have any further questions, feel free to ask.
+
+Here's a summary of what we covered:
+
+- We learned how to create attribute classes in PHP 8 and how to apply them to our code.
+- We used attributes to create Filter and Action hooks in our WordPress plugin.
+- We used the Reflection API of PHP to scan our code for hooks and to register them automatically.
+
+Thank you for reading, and happy coding!
+
+Feel free to download this WordPress plugin and experiment with it: [https://github.com/marcuskober/php-attributes/archive/refs/heads/main.zip](https://github.com/marcuskober/php-attributes/archive/refs/heads/main.zip)
+
+---
+
+# About me
+
+Hey there, I'm Marcus, and I'm a passionate full time WordPress developer who's dedicated to crafting high-quality, well-structured plugins. For me, coding is more than just a job; it's a creative outlet where I can constantly challenge myself to find new and better solutions.
+
+When I'm not working on WordPress projects, you can find me hanging out in Cologne, Germany, with my lovely wife and two wonderful kids.
+
+Don't hesitate to get in touch with me at [hello@marcuskober.de](mailto:hello@marcuskober.de). I'm always open to new ideas and collaborations!
