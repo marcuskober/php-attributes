@@ -6,9 +6,19 @@ namespace PhpAttributes\Attributes;
 
 use Attribute;
 
+/**
+ * Fitler attribute class
+ */
 #[Attribute]
 class Filter implements HookInterface
 {
+    /**
+     * Construct the fitler class
+     *
+     * @param string $hook
+     * @param integer $priority
+     * @param integer $acceptedArgs
+     */
     public function __construct(
         public string $hook,
         public int $priority = 10,
@@ -17,6 +27,12 @@ class Filter implements HookInterface
     {
     }
 
+    /**
+     * Register the filter
+     *
+     * @param callable|array $method
+     * @return void
+     */
     public function register(callable|array $method): void
     {
         add_filter($this->hook, $method, $this->priority, $this->acceptedArgs);
