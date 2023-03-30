@@ -4,7 +4,7 @@ In this tutorial, I will demonstrate how to utilize WordPress hooks with PHP att
 
 Note: The techniques presented in this tutorial are exclusively available in PHP 8! Therefore, make sure to adjust the 'Requires PHP' field in the plugin header accordingly.
 
-## Why is registering hooks troublesome?
+## Why is registering hooks problematic?
 
 Using an object-oriented programming (OOP) approach for WordPress plugins has often caused difficulties when it comes to hook registration. There are various methods available, and I will present three commonly used options.
 
