@@ -9,7 +9,7 @@ use Attribute;
 /**
  * Fitler attribute class
  */
-#[Attribute]
+#[Attribute(Attribute::TARGET_METHOD|Attribute::IS_REPEATABLE)]
 class Filter implements HookInterface
 {
     /**

@@ -9,7 +9,7 @@ use Attribute;
 /**
  * Action attribute class
  */
-#[Attribute]
+#[Attribute(Attribute::TARGET_METHOD|Attribute::IS_REPEATABLE)]
 class Action implements HookInterface
 {
     /**
