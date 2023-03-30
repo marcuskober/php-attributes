@@ -105,7 +105,7 @@ class MyClass
 }
 ```
 
-The attribute declaration begins with ```#[```and ends with ```]```. Inside, the attribute is listed. We place the attribute declaration right before the method:
+The attribute declaration begins with `#[` and ends with `]`. Inside, the attribute is listed. We place the attribute declaration right before the method:
 
 ```php
 class MyClass
@@ -143,4 +143,71 @@ We'll cover that in more detail later on.
 
 In order for the code above to work, we need to define the corresponding attribute class.
 
-We need the constructor to take the properties `hook`
+We need the constructor to take the properties `hook`, `priority` and `acceptedArgs`, as the `add_filter` function needs these too. We leverage the constructor property promotion of PHP 8.
+
+```php
+class Filter
+{
+    /**
+     * Construct the fitler class
+     *
+     * @param string $hook
+     * @param integer $priority
+     * @param integer $acceptedArgs
+     */
+    public function __construct(
+        public string $hook,
+        public int $priority = 10,
+        public int $acceptedArgs = 1
+    )
+    {
+    }
+}
+```
+
+Now we need to transform this regular class into an attribute class. As previously mentioned, attributes can also be added to classes. To indicate that this class is an attribute, we must include the #[Attribute] definition immediately preceding the class definition:
+
+```php
+#[Attribute]
+class Filter
+{
+    /**
+     * Construct the fitler class
+     *
+     * @param string $hook
+     * @param integer $priority
+     * @param integer $acceptedArgs
+     */
+    public function __construct(
+        public string $hook,
+        public int $priority = 10,
+        public int $acceptedArgs = 1
+    )
+    {
+    }
+}
+```
+
+Now, we want to incorporate the call to `add_filter()` within our class:
+
+```php
+#[Attribute]
+class Filter implements HookInterface
+{
+    public function __construct(
+        public string $hook,
+        public int $priority = 10,
+        public int $acceptedArgs = 1
+    )
+    {
+    }
+
+    public function register(callable|array $method): void
+    {
+        add_filter($this->hook, $method, $this->priority, $this->acceptedArgs);
+    }
+}
+```
+
+That's our attribute class. The next step is to make it functional.
+
