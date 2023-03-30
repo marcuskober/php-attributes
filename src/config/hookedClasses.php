@@ -6,4 +6,5 @@ namespace PhpAttributes\Hooks;
 
 return [
     AddStupidH1::class,
+    Appereance::class,
 ];

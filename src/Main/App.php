@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace PhpAttributes\Main;
 
 use PhpAttributes\Attributes\Action;
+use PhpAttributes\Attributes\Filter;
 use ReflectionClass;
 
 class App
@@ -35,6 +36,17 @@ class App
 
                     $action = $actionAttribute->newInstance();
                     $action->register([$this->instances[$hookedClass], $method->getName()]);
+                }
+
+                $filterAttributes = $method->getAttributes(Filter::class);
+
+                foreach ($filterAttributes as $filterAttribute) {
+                    if (! isset($this->instances[$hookedClass])) {
+                        $this->instances[$hookedClass] = new $hookedClass();
+                    }
+
+                    $filter = $filterAttribute->newInstance();
+                    $filter->register([$this->instances[$hookedClass], $method->getName()]);
                 }
             }
         }
