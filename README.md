@@ -74,3 +74,73 @@ MyClass::register();
 ```
 
 This is how I used hook registration before switching to PHP attributes. I appreciate that the registration takes place inside the class and we don't need to use the constructor. However, the registration is still decoupled from the method.
+
+## Leveraging PHP attributes
+
+PHP attributes provide the capability to add structured metadata to classes, methods, functions, and more. These attributes are machine-readable and can be inspected during runtime using the Reflection API.
+
+If you are not familiar with PHP attributes, please refer to [the documentation](https://www.php.net/manual/en/language.attributes.overview.php).
+
+To utilize PHP attributes for hook registration, we need to complete three tasks:
+
+1. Define the attribute class.
+2. Use the attribute on the method.
+3. Scan the classes with hooks.
+
+In practice, we follow this sequence to achieve our goal. To gain a better understanding of the concept, we will begin with step 2, move on to step 1, and then complete step 3.
+
+## The class with the hook
+
+Let's say we want to add a classname to the body tag, as seen in the examples above. We take the pure class without any hook registration:
+
+```php
+class MyClass
+{
+  public function addBodyClass(array $classes): array
+  {
+    $classes[] = 'my-new-class';
+
+    return $classes;
+  }
+}
+```
+
+The attribute declaration begins with ```#[```and ends with ```]```. Inside, the attribute is listed. We place the attribute declaration right before the method:
+
+```php
+class MyClass
+{
+  #[Filter('body_class')]
+  public function addBodyClass(array $classes): array
+  {
+    $classes[] = 'my-new-class';
+
+    return $classes;
+  }
+}
+```
+
+Observe how elegantly the attribute is connected to its respective method. By using this approach, you can easily make changes to the priority or number of arguments passed to the function in one central location.
+
+Here is an example of how to change the priority:
+
+```php
+class MyClass
+{
+  #[Filter('body_class', 1)]
+  public function addBodyClass(array $classes): array
+  {
+    $classes[] = 'my-new-class';
+
+    return $classes;
+  }
+}
+```
+
+We'll cover that in more detail later on.
+
+## The attribute class
+
+In order for the code above to work, we need to define the corresponding attribute class.
+
+We need the constructor to take the properties `hook`
