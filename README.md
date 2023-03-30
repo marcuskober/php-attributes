@@ -1,4 +1,4 @@
-# Tutorial: registering WordPress hooks using PHP attributes
+# 📖 Tutorial: Registering WordPress hooks using PHP attributes
 
 In this tutorial, I will demonstrate how to utilize WordPress hooks with PHP attributes. Although it may not be necessary for every simple plugin, employing PHP attributes can be particularly useful in plugins with a large codebase.
 
@@ -143,18 +143,11 @@ We'll cover that in more detail later on.
 
 In order for the code above to work, we need to define the corresponding attribute class.
 
-We need the constructor to take the properties `hook`, `priority` and `acceptedArgs`, as the `add_filter` function needs these too. We leverage the constructor property promotion of PHP 8.
+We need the constructor to take the properties `hook`, `priority` and `acceptedArgs`, as the `add_filter` function needs these too. We leverage the [constructor property promotion](https://www.php.net/manual/en/language.oop5.decon.php#language.oop5.decon.constructor.promotion) of PHP 8.
 
 ```php
 class Filter
 {
-    /**
-     * Construct the fitler class
-     *
-     * @param string $hook
-     * @param integer $priority
-     * @param integer $acceptedArgs
-     */
     public function __construct(
         public string $hook,
         public int $priority = 10,
@@ -171,13 +164,6 @@ Now we need to transform this regular class into an attribute class. As previous
 #[Attribute]
 class Filter
 {
-    /**
-     * Construct the fitler class
-     *
-     * @param string $hook
-     * @param integer $priority
-     * @param integer $acceptedArgs
-     */
     public function __construct(
         public string $hook,
         public int $priority = 10,
@@ -210,4 +196,163 @@ class Filter implements HookInterface
 ```
 
 That's our attribute class. The next step is to make it functional.
+
+## Scanning our hooked classes
+
+Now that our attribute class is ready and we have another class that uses this attribute, it's time to scan the classes for `Filter` attributes.
+
+n order to scan a class for attributes, we need to utilize the [Reflection API](https://www.php.net/manual/en/language.attributes.reflection.php) of PHP.
+
+Let's assume that we have a main class for our plugin:
+
+```php
+class App
+{
+  public static function init(): void
+  {
+  }
+}
+
+App::init();
+```
+
+We will create a method called `registerHooks()` and for simplicity's sake, we will hardcode the list of classes to scan directly into the method. However, in production, it's recommended to use other techniques. You can refer to another approach in the plugin inside this repository.
+
+```php
+class App
+{
+  public static function init(): void
+  {
+    $self = new self();
+    $self->registerHooks();
+  }
+
+  private function registerHooks(): void
+  {
+    $hookedClasses = [
+      'MyClass',
+    ];
+  }
+}
+
+App::init();
+```
+
+Note: You need to use the qualified class name here (see [src/Main/App.php](https://github.com/marcuskober/php-attributes/blob/142568d438c493051b97a002fee7f9479a99e137/src/Main/App.php)).
+
+Our goal now is to retrieve all the methods from the classes and check if they have any Filter attributes. To achieve this, we need to iterate through the classes and create a ReflectionClass instance of each class:
+
+```php
+class App
+{
+  public static function init(): void
+  {
+    $self = new self();
+    $self->registerHooks();
+  }
+
+  private function registerHooks(): void
+  {
+    $hookedClasses = [
+      'MyClass',
+    ];
+
+    foreach ($hookedClasses as $hookedClass) {
+      $reflectionClass = new ReflectionClass($hookedClass);
+    }
+
+  }
+}
+
+App::init();
+```
+
+Now that we have the reflection class, we can retrieve all its methods:
+
+```php
+$methods = $reflectionClass->getMethods();
+```
+
+This will return an array of `ReflectionMethod` objects. We can then loop through each method and get all `Filter` attributes, if any. The `getAttributes()` method returns an array filled with the `Filter` attribute objects or an empty array if no methods with filter attributes are found. We can then loop through each filter attribute object using a foreach loop:
+
+```php
+foreach ($methods as $method) {
+    $filterAttributes = $method->getAttributes(Filter::class);
+
+    foreach ($filterAttributes as $filterAttribute) {
+      // do the magic
+    }
+}
+```
+
+In the next step, we can instantiate the `Filter` attribute class using the `newInstance` method:
+
+```php
+foreach ($methods as $method) {
+    $filterAttributes = $method->getAttributes(Filter::class);
+
+    foreach ($filterAttributes as $filterAttribute) {
+      $filter = $filterAttribute->newInstance();
+    }
+}
+```
+
+Let's recall what property we need for the `register` method of our `Filter` class. We need the method in the form of an array (`[$className, $method]`). To get the required method, we first need to instantiate the class with the hooks:
+
+```php
+foreach ($methods as $method) {
+    $filterAttributes = $method->getAttributes(Filter::class);
+
+    foreach ($filterAttributes as $filterAttribute) {
+      $hookedClassObject = new $hookedClass();
+      
+      $filter = $filterAttribute->newInstance();
+      $filter->register([$hookedClassObject, $method->getName()]);
+    }
+}
+```
+
+And because a method is allowed to have multiple attributes and the hooked class may have more than one method, we need to ensure that the hooked class is instantiated only once. Here's the full `App` class for you to better understand the code:
+
+```php
+class App
+{
+  private array $instances = [];
+
+  public static function init(): void
+  {
+    $self = new self();
+    $self->registerHooks();
+  }
+
+  private function registerHooks(): void
+  {
+    $hookedClasses = [
+      'MyClass',
+    ];
+
+    foreach ($hookedClasses as $hookedClass) {
+      $reflectionClass = new ReflectionClass($hookedClass);
+
+      foreach ($reflectionClass->getMethods() as $method) {
+        $filterAttributes = $method->getAttributes(Filter::class);
+
+          foreach ($filterAttributes as $filterAttribute) {
+            if (! isset($this->instances[$hookedClass])) {
+              $this->instances[$hookedClass] = new $hookedClass();
+            }
+
+            $filter = $filterAttribute->newInstance();
+            $filter->register([$this->instances[$hookedClass], $method->getName()]);
+          }
+      }
+    }
+  }
+}
+```
+
+
+
+
+
 
