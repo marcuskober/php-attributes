@@ -7,7 +7,7 @@ namespace PhpAttributes\Attributes;
 use Attribute;
 
 #[Attribute]
-class Action
+class Action implements HookInterface
 {
     public function __construct(
         public string $hook,

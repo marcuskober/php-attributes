@@ -7,7 +7,7 @@ namespace PhpAttributes\Attributes;
 use Attribute;
 
 #[Attribute]
-class Filter
+class Filter implements HookInterface
 {
     public function __construct(
         public string $hook,
