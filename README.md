@@ -75,6 +75,7 @@ MyClass::register();
 
 This is how I used hook registration before switching to PHP attributes. I appreciate that the registration takes place inside the class and we don't need to use the constructor. However, the registration is still decoupled from the method.
 
+---
 ## Leveraging PHP attributes
 
 PHP attributes provide the capability to add structured metadata to classes, methods, functions, and more. These attributes are machine-readable and can be inspected during runtime using the Reflection API.
@@ -89,7 +90,7 @@ To utilize PHP attributes for hook registration, we need to complete three tasks
 
 In practice, we follow this sequence to achieve our goal. To gain a better understanding of the concept, we will begin with step 2, move on to step 1, and then complete step 3.
 
-## The class with the hook
+### 1️⃣ The class with the hook
 
 Let's say we want to add a classname to the body tag, as seen in the examples above. We take the pure class without any hook registration:
 
@@ -139,7 +140,7 @@ class MyClass
 
 We'll cover that in more detail later on.
 
-## The attribute class
+### 2️⃣ The attribute class
 
 In order for the code above to work, we need to define the corresponding attribute class.
 
@@ -197,7 +198,7 @@ class Filter implements HookInterface
 
 That's our attribute class. The next step is to make it functional.
 
-## Scanning our hooked classes
+### 3️⃣ Scanning our hooked classes
 
 Now that our attribute class is ready and we have another class that uses this attribute, it's time to scan the classes for `Filter` attributes.
 
