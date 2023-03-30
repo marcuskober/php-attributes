@@ -24,4 +24,5 @@ define('PHPAN_VERSION', '1.0.0');
 
 require PHPAN_DIR . 'vendor/autoload.php';
 
+// Init the app
 App::init();
