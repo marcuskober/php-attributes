@@ -8,33 +8,11 @@ use Attribute;
 
 /**
  * Action attribute class
+ *
+ * Extends Filter, because add_action and add_filter is actually the same:
+ * https://developer.wordpress.org/reference/functions/add_action/#source
  */
 #[Attribute(Attribute::TARGET_METHOD|Attribute::IS_REPEATABLE)]
-class Action implements HookInterface
+class Action extends Filter
 {
-    /**
-     * Construct the action class
-     *
-     * @param string $hook
-     * @param integer $priority
-     * @param integer $acceptedArgs
-     */
-    public function __construct(
-        public string $hook,
-        public int $priority = 10,
-        public int $acceptedArgs = 1
-    )
-    {
-    }
-
-    /**
-     * Register the action
-     *
-     * @param callable|array $method
-     * @return void
-     */
-    public function register(callable|array $method): void
-    {
-        add_action($this->hook, $method, $this->priority, $this->acceptedArgs);
-    }
 }
